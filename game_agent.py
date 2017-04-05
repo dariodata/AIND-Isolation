@@ -192,7 +192,7 @@ class CustomPlayer:
                 evaluation function directly.
         """
 
-        # handly timeout exception
+        # handle timeout exception
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
@@ -203,33 +203,20 @@ class CustomPlayer:
 
         # define move to return in original state
         moves = game.get_legal_moves()
-        best_move = moves[0]
 
-        # for maximizing player
+        # for each legal move get forecast scores
+        moves_outcomes = []
+        for m in moves:
+            new_game = game.forecast_move(m)
+            score = self.minimax(new_game, depth - 1, not maximizing_player)
+            moves_outcomes.append((score, m))
+
+        # for maximizing player return the highest score
         if maximizing_player:
-            for m in moves:
-                new_game = game.forecast_move(m)
-                # for each legal move check if the forecast game gives *better* score
-                # then replace best move and score if appropriate
-                if self.score(new_game, self) > best_score:
-                    best_move = m
-                    best_score = self.minimax(new_game, depth - 1, not maximizing_player)
-                else:
-                    pass
-
-        # for minimizing player
-        if not maximizing_player:
-            for m in moves:
-                new_game = game.forecast_move(m)
-                # for each legal move check if the forecast game gives *worse* score
-                # then replace best move and score if appropriate
-                if self.score(new_game, self) < best_score:
-                    best_move = m
-                    best_score = self.minimax(new_game, depth - 1, not maximizing_player)
-                else:
-                    pass
-
-        return best_score, best_move
+            return max(moves_outcomes)
+        # for minimizing player return the lowest score
+        else:
+            return min(moves_outcomes)
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
