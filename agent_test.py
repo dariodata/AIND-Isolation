@@ -161,7 +161,9 @@ def makeBranchEval(first_branch):
     """
 
     def score(game, player):
-        if not first_branch:
+        if not first_branch and game.root:
+            # Comment from https://discussions.udacity.com/t/alphabeta-test-move-list-is-none/229521/2
+            # otherwise test_alphabeta returned "Valid choices: [None]"
             first_branch.append(game.root)
         if game.root in first_branch:
             return 1.
