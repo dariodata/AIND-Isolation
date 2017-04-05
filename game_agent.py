@@ -139,16 +139,20 @@ class CustomPlayer:
             # when the timer gets close to expiring
             if self.method == 'minimax':
                 if self.iterative:
+                    # start with depth=1 and move to depth+1 if a result is obtained in time
                     depth = 1
-                    _, move = self.minimax(game, depth)
-                    depth += 1
+                    while True:
+                        _, move = self.minimax(game, depth)
+                        depth += 1
                 else:
                     _, move = self.minimax(game, self.search_depth)
             else:
                 if self.iterative:
+                    # start with depth=1 and move to depth+1 if a result is obtained in time
                     depth = 1
-                    _, move = self.alphabeta(game, depth)
-                    depth += 1
+                    while True:
+                        _, move = self.alphabeta(game, depth)
+                        depth += 1
                 else:
                     _, move = self.alphabeta(game, self.search_depth)
 
@@ -256,8 +260,43 @@ class CustomPlayer:
                 to pass the project unit tests; you cannot call any other
                 evaluation function directly.
         """
+        # handle timeout exception
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        # define score, move to return in original state
+        best_score = self.score(game, self)
+        if depth == 0:
+            return best_score, (-1,-1)
+
+        # define move to return in original state
+        moves = game.get_legal_moves()
+
+        if maximizing_player:
+            score = float("-inf")
+            best_move = (-1,-1)
+            for m in moves:
+                new_game = game.forecast_move(m)
+                score = max(score, self.alphabeta(new_game, depth - 1, alpha, beta, not maximizing_player)[0])
+                if score >= beta:
+                    return score, best_move
+                if score > alpha:
+                    alpha = score
+                    best_move = m
+            return score, best_move
+
+        # for minimizing player add scores to moves_outcomes only if it's lower than previous one
+        else:
+            score = float("inf")
+            best_move = (-1,-1)
+            for m in moves:
+                new_game = game.forecast_move(m)
+                score = min(score, self.alphabeta(new_game, depth - 1, alpha, beta, not maximizing_player)[0])
+                if score <= alpha:
+                    return score, best_move
+                if score < beta:
+                    beta = score
+                    best_move = m
+            return score, best_move
+
+
