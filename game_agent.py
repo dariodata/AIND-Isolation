@@ -125,8 +125,6 @@ class CustomPlayer:
 
         self.time_left = time_left
 
-        # TODO: finish this function!
-
         # Perform any required initializations, including selecting an initial
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
@@ -163,7 +161,6 @@ class CustomPlayer:
 
         except Timeout:
             # Handle any actions required at timeout, if necessary
-            print('No time left')
             pass
 
         # Return the best move from the last completed search iteration
@@ -215,17 +212,21 @@ class CustomPlayer:
 
         # for each legal move get forecast scores
         moves_outcomes = []
-        for m in moves:
-            new_game = game.forecast_move(m)
-            score = self.minimax(new_game, depth - 1, not maximizing_player)
-            moves_outcomes.append((score, m))
+
+        #new_game = game.forecast_move(m)
+#            score = self.minimax(new_game, depth - 1, not maximizing_player)
+        child_minmax = lambda game: self.minimax(game, depth - 1, not maximizing_player)
+        moves_outcomes = ((child_minmax(game.forecast_move(m)), m) for m in moves)
+#            moves_outcomes.append((score, m))
 
         # for maximizing player return the highest score
-        if maximizing_player:
-            return max(moves_outcomes)
-        # for minimizing player return the lowest score
-        else:
-            return min(moves_outcomes)
+
+        if moves_outcomes:
+            if maximizing_player:
+                return max(moves_outcomes)
+    # for minimizing player return the lowest score
+            else:
+                return min(moves_outcomes)
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
